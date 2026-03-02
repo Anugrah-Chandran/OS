@@ -10,7 +10,7 @@ typedef struct {
     int ct, tat, wt, rt;
 } Process;
 
-/* ---------- Utility Function ---------- */
+// Standard print for FCFS, SJF, and Round Robin
 void printResult(Process p[], int n, char name[]) {
     float totalWT = 0, totalTAT = 0;
 
@@ -31,7 +31,27 @@ void printResult(Process p[], int n, char name[]) {
     printf("Average Waiting Time    : %.2f\n", totalWT / n);
 }
 
-/* ---------- FCFS ---------- */
+// Specialized print for Priority Scheduling to show the Priority Number
+void printPriorityResult(Process p[], int n, char name[]) {
+    float totalWT = 0, totalTAT = 0;
+
+    printf("\n========== %s ==========\n", name);
+    printf("PID\tAT\tBT\tPR\tCT\tTAT\tWT\n");
+
+    for (int i = 0; i < n; i++) {
+        printf("%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
+               p[i].pid, p[i].at, p[i].bt, p[i].pr,
+               p[i].ct, p[i].tat, p[i].wt);
+
+        totalWT += p[i].wt;
+        totalTAT += p[i].tat;
+    }
+
+    printf("-----------------------------------------------\n");
+    printf("Average Turnaround Time : %.2f\n", totalTAT / n);
+    printf("Average Waiting Time    : %.2f\n", totalWT / n);
+}
+
 void FCFS(Process p[], int n) {
     int time = 0;
     for (int i = 0; i < n; i++) {
@@ -46,7 +66,6 @@ void FCFS(Process p[], int n) {
     printResult(p, n, "FCFS Scheduling");
 }
 
-/* ---------- SJF (Non-Preemptive) ---------- */
 void SJF(Process p[], int n) {
     int completed = 0, time = 0;
     int done[MAX] = {0};
@@ -76,7 +95,6 @@ void SJF(Process p[], int n) {
     printResult(p, n, "SJF Scheduling");
 }
 
-
 void Priority(Process p[], int n) {
     int completed = 0, time = 0;
     int done[MAX] = {0};
@@ -104,10 +122,9 @@ void Priority(Process p[], int n) {
         done[idx] = 1;
         completed++;
     }
-    printResult(p, n, "Priority Scheduling");
+    printPriorityResult(p, n, "Priority Scheduling");
 }
 
-/* ---------- Round Robin - CORRECTED ---------- */
 void RoundRobin(Process p[], int n) {
     int time = 0, completed = 0;
     int queue[500], front = 0, rear = 0;
@@ -116,18 +133,15 @@ void RoundRobin(Process p[], int n) {
     for (int i = 0; i < n; i++)
         p[i].rt = p[i].bt;
 
-    // Correctly find the first process to arrive, even if it's not at time 0
-    int start_found = 0;
     while (completed < n) {
         for (int i = 0; i < n; i++) {
             if (!inQueue[i] && p[i].at <= time && p[i].rt > 0) {
                 queue[rear++] = i;
                 inQueue[i] = 1;
-                start_found = 1;
             }
         }
 
-        if (front == rear) { // No process in queue
+        if (front == rear) { 
             time++;
             continue;
         }
@@ -138,7 +152,6 @@ void RoundRobin(Process p[], int n) {
         p[i].rt -= exec;
         time += exec;
 
-        // Check for new arrivals during the execution of this quantum
         for (int j = 0; j < n; j++) {
             if (!inQueue[j] && p[j].at <= time && p[j].rt > 0) {
                 queue[rear++] = j;
@@ -158,7 +171,6 @@ void RoundRobin(Process p[], int n) {
     printResult(p, n, "Round Robin (Q = 3)");
 }
 
-/* ---------- Main ---------- */
 int main() {
     int n;
     Process p[MAX], temp[MAX];
@@ -174,7 +186,6 @@ int main() {
         printf("Priority: "); scanf("%d", &p[i].pr);
     }
 
-    // Run algorithms
     memcpy(temp, p, sizeof(Process) * n);
     FCFS(temp, n);
 
